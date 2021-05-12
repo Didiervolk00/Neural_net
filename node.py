@@ -1,3 +1,4 @@
+import numpy as np
 # Author:       Ricardo Mokveld || Didier Volk  || Diederik van Linden
 # Studentnr:    0971051         || 0973139      || 0970665
 # Class:        Tinlab Machine Learning
@@ -17,14 +18,15 @@
 # -
 
 class Node:
-    def __init__(self):     
-        pass
+    def __init__(self, outgoingEdge, incommingEdge):
+        self.list_outgoingEdges = []   
+        self.list_incommingEdges = []  
             
     def addOutgoingEdge(self, outgoingEdge):
-        self.outgoingEdge = outgoingEdge
-    
+        self.list_outgoingEdges.append(outgoingEdge)
+        
     def addIncommingEdge(self, incommingEdge):
-        self.incommingEdge = incommingEdge
+        self.list_incommingEdges.append(incommingEdge)
 
     def sigmoid(x): 
         return 1/(1 + np.exp(-x))      

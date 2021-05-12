@@ -22,3 +22,4 @@ class Edge:
         self.amplification = 1
         self.beginNode = beginNode
         self.endNode = endNode
+
