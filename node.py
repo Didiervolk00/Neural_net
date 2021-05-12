@@ -19,17 +19,14 @@ class Node:
     def addMatrixInput(self, matrixInput):
         self.matrixInput = matrixInput
 
-
-
-
     def getValue(self):
         for i in range(len(self.list_incommingEdges)):
             self.value += self.list_incommingEdges[i].getValue()
             
         return self.value
             
-    def sigmoid(self): 
+    def Sigmoid(self): 
         x = self.getValue()
         return 1/(1 + np.exp(-x))   
-   
-            
+
+      
