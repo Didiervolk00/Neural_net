@@ -1,4 +1,5 @@
 import node
+import random
 
 # Author:       Ricardo Mokveld || Didier Volk  || Diederik van Linden
 # Studentnr:    0971051         || 0973139      || 0970665
@@ -6,7 +7,7 @@ import node
 class Edge:
     def __init__(self, id, beginNode, endNode, cargo):
         self.id = id
-        self.amplification = 1
+        self.amplification = random.randint(0,1000)
         self.beginNode = beginNode
         self.endNode = endNode
         self.cargo = cargo

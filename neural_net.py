@@ -2,6 +2,7 @@ import numpy as np
 import node
 import edge
 import json
+import random
 
 # Author:       Ricardo Mokveld || Didier Tolk  || Diederik van Linden
 # Studentnr:    0971051         || 0973139      || 0970665
@@ -29,7 +30,7 @@ import json
     # - Is it possible to insert the data from the trainingset into the node
     # - Check if sigmoid function is applied on the last nodes
     # - Check if the values are the same or different (because of amplification) on the edges as on the begin nodes
-    # - 
+
 
 Node = node.Node
 Edge = edge.Edge
@@ -58,18 +59,23 @@ matrix = data['trainingsSet'][f'{0}']['input']
 # for i in range(len(edges)):
 #   edges[i].setAmplification()
 
+#??? ik weet niet of dit een goede oplossing is voor de amplification is, misschien beter om er gestructureerd door heen te loopen.
+# krijg de nieuwe amplifications niet in de edges, mean verandert niet....
+# for i in range(18):
+#     edges[i].setAmplification(i)
+#     print(edges[i].amplification)
+
 for i in range(len(nodeInput)):
     nodeInput[i].addMatrixInput(matrix[i])
     print(nodeInput[i].matrixInput)
 
 print('=========================')
 
-for i in range(len(edges)):
-    print(edges[i].getValue())
+# for i in range(len(edges)):
+#     print(edges[i].getValue())
 
-for i in range(len(nodeOutput)):
-    print(nodeOutput[i].Sigmoid())
-
+# for i in range(len(nodeOutput)):
+#     print(nodeOutput[i].Sigmoid())
 
 def calcMean():
     a = nodeOutput[0].Sigmoid()
@@ -77,7 +83,7 @@ def calcMean():
     vector = [a,b]
 
     normalized_v = vector / np.linalg.norm(vector)
-    print(normalized_v)
+    # print(normalized_v)
 
     circle = data['figures']['O']
     cross = data['figures']['X']
@@ -87,5 +93,3 @@ def calcMean():
     return p
 
 print(calcMean())
-
-
