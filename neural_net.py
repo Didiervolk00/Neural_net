@@ -1,8 +1,9 @@
 import numpy as np
-import node
 import edge
 import json
-import random
+
+from node import Node
+from edge import Edge
 
 # Author:       Ricardo Mokveld || Didier Tolk  || Diederik van Linden
 # Studentnr:    0971051         || 0973139      || 0970665
@@ -32,64 +33,88 @@ import random
     # - Check if the values are the same or different (because of amplification) on the edges as on the begin nodes
 
 
-Node = node.Node
-Edge = edge.Edge
-
-nodeInput = [Node(i, i, i, 0) for i in range(9)]
-nodeOutput = [Node(i, i, i, 0) for i in range(2)]
+nodeInput = [Node(i, i, i, 1) for i in range(9)]
+nodeOutput = [Node(i, i, i, 1) for i in range(2)]
 edges = []
 
 edgeId = 0
-cargo = 0
+prevAmp = 0
+bestAmp = 0
+desiredError = 0.001
+avgError = np.Infinity
+
+testSet = open('trainingset.json',)
+data = json.load(testSet)
+
+trainingsSet = data['trainingsSet']
+testSet = data['testSet']
+figures = data['figures']
 
 for nodeIn in nodeInput:
     for nodeOut in nodeOutput:
-        edge = Edge(edgeId, nodeIn, nodeOut, cargo)
+        edge = Edge(edgeId, nodeIn, nodeOut)
         nodeIn.addOutgoingEdge(edge)
         nodeOut.addIncommingEdge(edge)
         edgeId+=1
         edges.append(edge)
 
-testSet = open('trainingset.json',)
+#Calculate the total mean error for the trainingsset
+def calculateMean():
+    totalMean = 0
+    for i in range(len(trainingsSet)):
 
-data = json.load(testSet)
+        currentFigure = trainingsSet[f'{i}']['input']
+        expectedResult = figures[f"{trainingsSet[f'{i}']['figure']}"]
 
-matrix = data['trainingsSet'][f'{0}']['input']
+        for j in range(len(nodeInput)):
+            nodeInput[j].addMatrixInput(currentFigure[j])
 
-# for i in range(len(edges)):
-#   edges[i].setAmplification()
+        a = nodeOutput[0].getValue()
+        b = nodeOutput[1].getValue()
+        vector = [a, b]
 
-#??? ik weet niet of dit een goede oplossing is voor de amplification is, misschien beter om er gestructureerd door heen te loopen.
-# krijg de nieuwe amplifications niet in de edges, mean verandert niet....
-# for i in range(18):
-#     edges[i].setAmplification(i)
-#     print(edges[i].amplification)
-
-for i in range(len(nodeInput)):
-    nodeInput[i].addMatrixInput(matrix[i])
-    print(nodeInput[i].matrixInput)
-
-print('=========================')
-
-# for i in range(len(edges)):
-#     print(edges[i].getValue())
-
-# for i in range(len(nodeOutput)):
-#     print(nodeOutput[i].Sigmoid())
-
-def calcMean():
-    a = nodeOutput[0].Sigmoid()
-    b = nodeOutput[1].Sigmoid()
-    vector = [a,b]
-
-    normalized_v = vector / np.linalg.norm(vector)
-    # print(normalized_v)
-
-    circle = data['figures']['O']
-    cross = data['figures']['X']
-
-    p = np.mean((normalized_v - circle)**2)
+        normalized_v = vector / np.linalg.norm(vector)
+        mean = np.mean((normalized_v - expectedResult) ** 2)
+        
+        totalMean += mean
     
-    return p
+    return totalMean / len(trainingsSet)
 
-print(calcMean())
+#Learn the program what a cross and circle is.
+while avgError > desiredError:
+    currentBestError = np.Infinity
+    for edge in edges:
+        for value in [-0.1, 0.1]:
+            edge.changeAmplification(value)
+            newError = calculateMean()
+            edge.changeAmplification(-value)
+
+            if newError < currentBestError:
+                currentBestError = newError
+                bestEdge = edge
+                bestAmp = value
+
+    bestEdge.changeAmplification(bestAmp)
+    avgError = currentBestError
+    print(avgError)
+
+# Run the test set trough the nodes and edges with various amplifications
+for i in range(len(testSet)):
+    currentFigure = testSet[f'{i}']['input']
+    expectedResult = figures[f"{testSet[f'{i}']['figure']}"]
+
+
+    for j in range(len(nodeInput)):
+        nodeInput[j].addMatrixInput(currentFigure[j])
+
+    a = nodeOutput[0].getValue()
+    b = nodeOutput[1].getValue()
+    vector = [a, b]
+    normalized_v = vector / np.linalg.norm(vector)
+
+    print(f'{i}: Expected result: {expectedResult}. Actual result: {normalized_v}')
+
+
+
+
+
