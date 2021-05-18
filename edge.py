@@ -8,11 +8,10 @@ class Edge:
         self.beginNode = beginNode
         self.endNode = endNode
 
+    #Gets x value from node and amplifies this
     def getValue(self):
         return self.beginNode.value * self.amplification
 
-    def setAmplification(self, amplification):
-        self.amplification = amplification
-
+    #Change the amplification to vary trough different values
     def changeAmplification(self, change):
         self.amplification += change

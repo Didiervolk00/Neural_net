@@ -29,20 +29,23 @@ from edge import Edge
 # Test specification:
     # - Check if the nodes are connected correctly with the right edge in between
     # - Is it possible to insert the data from the trainingset into the node
-    # - Check if sigmoid function is applied on the last nodes
-    # - Check if the values are the same or different (because of amplification) on the edges as on the begin nodes
+    # - Check if sigmoid function is applied
+    # - Check if the mean error decreases to the desired error
+    # - Compare the testset to the program
 
-
-nodeInput = [Node(i, i, i, 1) for i in range(9)]
-nodeOutput = [Node(i, i, i, 1) for i in range(2)]
+#LISTS
+nodeInput = [Node(i, i, 1) for i in range(9)]
+nodeOutput = [Node(i, i, 1) for i in range(2)]
 edges = []
 
+#VARIABLES
 edgeId = 0
 prevAmp = 0
 bestAmp = 0
 desiredError = 0.001
 avgError = np.Infinity
 
+#JSON
 testSet = open('trainingset.json',)
 data = json.load(testSet)
 
@@ -50,6 +53,7 @@ trainingsSet = data['trainingsSet']
 testSet = data['testSet']
 figures = data['figures']
 
+#Make the input layer connected to the output layer trough edges
 for nodeIn in nodeInput:
     for nodeOut in nodeOutput:
         edge = Edge(edgeId, nodeIn, nodeOut)
@@ -61,18 +65,23 @@ for nodeIn in nodeInput:
 #Calculate the total mean error for the trainingsset
 def calculateMean():
     totalMean = 0
+
+    #Calculate the mean error for each entry in the training data
     for i in range(len(trainingsSet)):
 
         currentFigure = trainingsSet[f'{i}']['input']
         expectedResult = figures[f"{trainingsSet[f'{i}']['figure']}"]
 
+        #Insert the input in the input layer
         for j in range(len(nodeInput)):
-            nodeInput[j].addMatrixInput(currentFigure[j])
+            nodeInput[j].addValue(currentFigure[j])
 
+        #Extract the input from the output nodes and put them in a vector
         a = nodeOutput[0].getValue()
         b = nodeOutput[1].getValue()
         vector = [a, b]
 
+        #Normalize the output from the output nodes
         normalized_v = vector / np.linalg.norm(vector)
         mean = np.mean((normalized_v - expectedResult) ** 2)
         
@@ -85,36 +94,41 @@ while avgError > desiredError:
     currentBestError = np.Infinity
     for edge in edges:
         for value in [-0.1, 0.1]:
+
+            #Change the amplifier of one edge
             edge.changeAmplification(value)
             newError = calculateMean()
+
+            #Reset the amplifier to the original state
             edge.changeAmplification(-value)
 
+            #Set the new best error to the variable
             if newError < currentBestError:
                 currentBestError = newError
                 bestEdge = edge
                 bestAmp = value
 
+    #Only change the amplifier that has the most positive effect on the error
     bestEdge.changeAmplification(bestAmp)
     avgError = currentBestError
-    print(avgError)
+    # print(avgError)
 
 # Run the test set trough the nodes and edges with various amplifications
 for i in range(len(testSet)):
     currentFigure = testSet[f'{i}']['input']
     expectedResult = figures[f"{testSet[f'{i}']['figure']}"]
 
-
+    #Insert the input in the input layer
     for j in range(len(nodeInput)):
-        nodeInput[j].addMatrixInput(currentFigure[j])
+        nodeInput[j].addValue(currentFigure[j])
 
+    #Extract the input from the output nodes and put them in a vector
     a = nodeOutput[0].getValue()
     b = nodeOutput[1].getValue()
     vector = [a, b]
+
+    #Normalize the output from the output nodes
     normalized_v = vector / np.linalg.norm(vector)
 
+    #Compare the expected result of the testset to the actual calculated result trough the layers
     print(f'{i}: Expected result: {expectedResult}. Actual result: {normalized_v}')
-
-
-
-
-
